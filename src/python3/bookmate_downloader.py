@@ -39,7 +39,7 @@ class ScriptParser(HTMLParser):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.__data = None
-        self.client_params = []
+        self.initial_state = []
 
     def handle_starttag(self, tag, attrs):
         if tag == "script":
@@ -56,14 +56,13 @@ class ScriptParser(HTMLParser):
 
     def handle_script_data(self, script_data):
         logging.debug("script_data:%s ...", script_data[:40])
-        S = "window.CLIENT_PARAMS"
+        S = "{\"props\":{\"pageProps\""
         if S not in script_data:
             return
-        after = script_data[script_data.find(S)+len(S):]
-        logging.debug("after: %s", after)
-        json_text = after[after.find("=")+1:after.find(";")]
-        self.client_params = json.loads(json_text.strip())
-        logging.debug("client_params: %s", self.client_params)
+        logging.debug("after: %s", script_data)
+        json_text = script_data
+        self.initial_state = json.loads(json.loads(json_text.strip())["props"]["pageProps"]["initialState"].strip())
+        logging.debug("initial_state: %s", self.initial_state)
 
 
 class Downloader:
@@ -119,12 +118,12 @@ class BookDownloader:
         assert self.secret is not None
 
     def download_secret(self):
-        url = "https://reader.bookmate.com/%s" % self.bookid
+        url = "https://reader-next.bookmate.ru/%s" % self.bookid
         html = self.downloader.request_url(url).text
         logging.debug("html:%s ...", html[:20])
         parser = ScriptParser()
         parser.feed(html)
-        secret = parser.client_params["secret"]
+        secret = parser.initial_state["global"]["userMetadata"]["secret"]
         logging.debug("secret: %s", secret)
         return secret
 
@@ -135,7 +134,7 @@ class BookDownloader:
 
     def download_metadata(self, bookid):
         logging.debug("download_metadata(%s)", bookid)
-        url = "https://reader.bookmate.com/p/api/v5/books/%s/metadata/v4" % bookid  # noqa: E501
+        url = "https://reader-next.bookmate.ru/p/api/v5/books/%s/metadata/v4" % bookid  # noqa: E501
         metadata_response = self.downloader.request_url(url)
         logging.debug("metadata_response:%s ...", metadata_response.text[:40])
         return metadata_response.json()
@@ -186,7 +185,7 @@ class BookDownloader:
             if fname == "toc.ncx":
                 continue
             logging.debug("fname:%s", fname)
-            url = "https://reader.bookmate.com/p/a/4/d/{uuid}/contents/OEBPS/{fname}".format(uuid=uuid, fname=fname)
+            url = "https://reader-next.bookmate.ru/p/a/4/d/{uuid}/contents/OEBPS/{fname}".format(uuid=uuid, fname=fname)
             try:
                 response = self.downloader.request_url(url)
                 self.downloader.save_bytes(response.content, "OEBPS/"+fname)
@@ -217,16 +216,16 @@ class Bookmate:
 
 
 def get_cookies():
-    if os.environ.get('BMS') is not None:
-        bms = os.environ.get('BMS')
+    if os.environ.get('SESSION_ID') is not None:
+        Session_id = os.environ.get('SESSION_ID')
     else:
         try:
             from pycookiecheat import chrome_cookies
-            cc = chrome_cookies("https://reader.bookmate.com")
-            bms = cc["bms"]
+            cc = chrome_cookies("https://reader-next.bookmate.ru")
+            Session_id = cc["Session_id"]
         except Exception:
-            bms = input("Enter bms cookie\n(your browser -> developer tools -> application -> bookmate.com -> bms -> Value) :")
-    return {"bms": bms}
+            Session_id = input("Enter Session_id cookie\n(your browser -> developer tools -> application -> bookmate.ru -> Session_id -> Value) :")
+    return {"Session_id": Session_id}
 
 if __name__ == "__main__":
     argparser = argparse.ArgumentParser()
@@ -253,7 +252,7 @@ if __name__ == "__main__":
         book.make_epub()
     if arg.delete_downloaded:
         book.delete_downloaded()
-    # url = bookid if arg.bookid.startswith("http") else "https://reader.bookmate.com/%s" % arg.bookid  # noqa: E501
+    # url = bookid if arg.bookid.startswith("http") else "https://reader-next.bookmate.ru/%s" % arg.bookid  # noqa: E501
     # downloader = BookDownloader(url, "out")
     # downloader.download_book()
     # downloader.make_epub()
