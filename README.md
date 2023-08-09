@@ -1,12 +1,12 @@
 # Bookmate Downloader
-Downloads books from https://bookmate.com and saves them as epub format files.
+Downloads books from https://bookmate.ru and saves them as epub format files.
 
 # You need to be subscribed to bookmate.com premium OR download books that are available for free !!!
 Works on Mac OS X, Linux.
 For Windows 10 you'll need to install WSL (Windows subsystem for linux) aka Windows Ubuntu.
 
 Steps:
-1. Buy the subscription at bookmate.com
+1. Buy the subscription at bookmate.ru
 2. Authorize at bookmate.com with your chrome browser
 3. install python3
 4. Copy the bookid (open the book at bookmate.com and check the url)
@@ -30,15 +30,16 @@ docker run -it --mount type=bind,source=$(pwd),target=/mnt/data bookmate_dl --bo
 ```
 
 ## From Windows:
-1. Install & Run [WSL](https://docs.microsoft.com/en-us/windows/wsl/install-win10)
-2. ```cd /mnt/c/users/myusername```
-3. ```git clone https://www.github.com/ilyakharlamov/bookmate_downloader```
-4. ```cd bookmate_downloader```
-5. ```sudo apt-get update```
-6. ```sudo apt install -y python3-pip```
-7. ```pip3 install -r src/python3/requirements.txt```
-8. ```python3 src/python3/bookmate_downloader.py --bookid KFHDG3bp```
-9. After completion, you will find your book at your home folder at bookmate_downloader/out
+1. Install Python
+2. Install git
+3. Open cmd in directory any directroy
+4. ```git clone https://www.github.com/ilyakharlamov/bookmate_downloader```
+5. ```cd bookmate_downloader```
+6. ```sudo apt-get update```
+7. ```sudo apt install -y python3-pip```
+8. ```pip3 install -r src/python3/requirements.txt```
+9. ```python3 src/python3/bookmate_downloader.py --bookid KFHDG3bp```
+10. After completion, you will find your book at your home folder at bookmate_downloader/out
 
 
 You will be asked for 'BMS cookie', in order to get it:
