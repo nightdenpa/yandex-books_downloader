@@ -1,4 +1,4 @@
-#[Русский readme здесь](ru_README.md)
+# [Русский readme здесь](ru_README.md)
 
 # Yandex Books Downloader
 Downloads books from https://books.yandex.ru and saves them as epub format files.
